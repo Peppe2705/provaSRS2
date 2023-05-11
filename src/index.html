@@ -1,17 +1,67 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="styles.css">
-  <title>Vanilla JavaScript App</title>
+	<title>Modulo di login sicuro</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src https: data:; script-src 'self'">
 </head>
-
 <body>
-  <main>
-    <h1>Vanilla JavaScript App</h1>
-  </main>
-</body>
+	<h1>Benvenuto!</h1>
+	<p>Per accedere, inserisci le tue credenziali:</p>
+	<form method="post" action="/login">
+		<label for="username">Nome utente:</label>
+		<input type="text" id="username" name="username"><br>
 
+		<label for="password">Password:</label>
+		<input type="password" id="password" name="password"><br>
+
+		<input type="submit" value="Accedi">
+	</form>
+
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/bcryptjs/2.4.3/bcrypt.min.js"></script>
+	<script>
+		// Aggiungi un evento al pulsante di invio del modulo
+		document.querySelector('form').addEventListener('submit', function(e) {
+			e.preventDefault(); // Previeni l'invio del modulo
+
+			// Recupera i valori inseriti dall'utente
+			var username = document.querySelector('#username').value;
+			var password = document.querySelector('#password').value;
+
+			// Calcola l'hash della password inserita dall'utente
+			var salt = bcrypt.genSaltSync(10);
+			var hash = bcrypt.hashSync(password, salt);
+
+			// Invia le credenziali al server
+			fetch('/login', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					username: username,
+					password: hash
+				})
+			})
+			.then(response => {
+				if (response.ok) {
+					// Accesso riuscito
+					alert('Accesso riuscito!');
+				} else if (response.status === 401) {
+					// Credenziali non valide
+					alert('Credenziali non valide. Riprova.');
+				} else {
+					// Errore sconosciuto
+					alert('Si è verificato un errore. Riprova più tardi.');
+				}
+			})
+			.catch(error => {
+				console.error(error);
+				alert('Si è verificato un errore. Riprova più tardi.');
+			});
+		});
+	</script>
+</body>
 </html>
+
